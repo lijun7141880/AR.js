@@ -25,7 +25,10 @@
 			
 			<a-entity id="logo" rotation="0 45 0" scale='0.8 0.8 0.8'>
 				<!-- firefox model -->
-				<a-entity obj-model='obj: #tree-obj; mtl: #tree-mtl' position='0 0.8 0' rotation='0 90 0' shadow='receive: true'></a-entity>
+				<a-entity obj-model='obj: #tree-obj; mtl: #tree-mtl' position='0 0.8 0' rotation='0 90 0' shadow='receive: true'>
+					<a-animation attribute='rotation' from='0 0 0' to='0 360 0' direction='uniform' dur='10000'
+								 repeat='indefinite' easing='linear'></a-animation>
+				</a-entity>
 				
 				<!-- add shadow only ground -->
 				<a-entity shadowonly-plane='width: 3; height: 3; opacity: 0.7'></a-entity>
