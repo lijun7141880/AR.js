@@ -4,9 +4,11 @@
  * @author angelxuanchang
  */
 
-THREE.MTLLoader = function ( manager ) {
+THREE.MTLLoader = function ( baseUrl, options, crossOrigin ) {
 
-	this.manager = ( manager !== undefined ) ? manager : THREE.DefaultLoadingManager;
+    this.baseUrl = baseUrl;
+    this.options = options;
+    this.crossOrigin = crossOrigin;
 
 };
 
@@ -27,17 +29,46 @@ THREE.MTLLoader.prototype = {
 	 * @note In order for relative texture references to resolve correctly
 	 * you must call setPath and/or setTexturePath explicitly prior to load.
 	 */
-	load: function ( url, onLoad, onProgress, onError ) {
+	load: function ( url ) {
 
 		var scope = this;
+        var xhr = new XMLHttpRequest();
 
-		var loader = new THREE.FileLoader( this.manager );
-		loader.setPath( this.path );
-		loader.load( url, function ( text ) {
+        function onloaded( event ) {
 
-			onLoad( scope.parse( text ) );
+            if ( event.target.status === 200 || event.target.status === 0 ) {
 
-		}, onProgress, onError );
+                var materialCreator = scope.parse( event.target.responseText );
+
+                // Notify caller, that I'm done
+
+                scope.dispatchEvent( { type: 'load', content: materialCreator } );
+
+            } else {
+
+                scope.dispatchEvent( { type: 'error', message: 'Couldn\'t load URL [' + url + ']',
+                    response: event.target.responseText } );
+
+            }
+
+        }
+
+        xhr.addEventListener( 'load', onloaded, false );
+
+        xhr.addEventListener( 'progress', function ( event ) {
+
+            scope.dispatchEvent( { type: 'progress', loaded: event.loaded, total: event.total } );
+
+        }, false );
+
+        xhr.addEventListener( 'error', function () {
+
+            scope.dispatchEvent( { type: 'error', message: 'Couldn\'t load URL [' + url + ']' } );
+
+        }, false );
+
+        xhr.open( 'GET', url, true );
+        xhr.send( null );
 
 	},
 
@@ -541,3 +572,5 @@ THREE.MTLLoader.MaterialCreator.prototype = {
 	}
 
 };
+
+THREE.EventDispatcher.prototype.apply( THREE.MTLLoader.prototype );
